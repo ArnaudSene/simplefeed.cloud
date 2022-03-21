@@ -1,0 +1,69 @@
+stages:
+  - merge-request
+  - deploy
+
+default:
+  image: python:3.9-alpine
+
+before_script:
+  - pip install pytest coverage flake8 anyio aiosqlite
+  - pip install -r requirements.txt
+
+
+merge-request-no-prod:
+  stage: merge-request
+  script:
+    - coverage run -m pytest -v tests
+    - coverage report -m
+    - coverage xml
+    - flake8 src/ main.py
+
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != $CI_DEFAULT_BRANCH
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+
+
+merge-request-prod:
+  stage: merge-request
+  script:
+    - coverage run -m pytest -v tests/
+    - coverage report -m
+    - coverage xml
+    - flake8 src/ main.py
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+
+deploy-dev:
+  stage: deploy
+  script:
+    - coverage run -m pytest -v tests/
+    - coverage report -m
+    - coverage xml
+    - flake8 --format=json --exit-zero --output-file=gl-code-quality-report.json src/ main.py
+
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH == 'dev' && $CI_PIPELINE_SOURCE != 'trigger'
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+      codequality: gl-code-quality-report.json
+
+deploy-prod:
+  stage: deploy
+  script:
+    - coverage run -m pytest -v tests/
+    - coverage report -m
+    - coverage xml
+    - flake8 --format=json --exit-zero --output-file=gl-code-quality-report.json src/ main.py
+
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != 'trigger'
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+      codequality: gl-code-quality-report.json
