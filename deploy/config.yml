@@ -1,0 +1,18 @@
+---
+version: 2
+
+target: "."
+db_path: "."
+files_and_dirs:
+  - 'alembic'
+  - 'deploy/docker-compose.yml'
+  - 'deploy/Dockerfile'
+  - 'deploy/run.sh'
+  - 'deploy/env.yml'
+  - 'src'
+  - 'templates'
+  - 'alembic.ini'
+  - 'main.py'
+  - 'requirements.txt'
+env_file: "env.yml"
+docker_env: ".env"
