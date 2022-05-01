@@ -1,9 +1,11 @@
 """simplefeed.cloud API."""
+import asyncio
 from typing import List
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from websockets.exceptions import ConnectionClosedOK
 
 from src.applications.feed import ReadFeeds, ReadFeedById, \
     CreateNewFeedAndReadFeedByID
@@ -54,12 +56,30 @@ async def root(request: Request):
     feeds = await ReadFeeds(feed_provider=DB_PROVIDER)()
 
     return templates.TemplateResponse(
-        "index.html",
+        "index-ws.html",
         {
             "request": request,
             "feeds": feeds,
         }
     )
+
+
+@app.websocket("/ws")
+async def get_feeds_ws(websocket: WebSocket):
+    """root html."""
+    try:
+        await websocket.accept()
+        while True:
+            data = {
+                    "origin": "github.com (ws)",
+                    "event": "New repository",
+                    "description": "A new repository 'sassy' has been "
+                                   "created ...",
+                }
+            await websocket.send_json(data)
+            await asyncio.sleep(5)
+    except ConnectionClosedOK:
+        await websocket.close()
 
 
 @app.get("/feeds", response_model=List[FeedDetail], tags=["items"])

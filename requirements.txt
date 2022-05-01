@@ -1,10 +1,13 @@
-pyyaml
+PyYAML==6.0
+
 
 # API
 fastapi==0.75.0
 Jinja2==3.0.3
 requests==2.27.1
 uvicorn==0.17.6
+websockets==10.2
+
 
 # Database
 alembic==1.7.7
@@ -12,7 +15,7 @@ asyncpg==0.25.0
 databases==0.5.5
 psycopg2-binary==2.9.3
 SQLAlchemy==1.4.32
-pydantic
+pydantic==1.9.0
 
 # async Unittest
 #trio==0.20.0

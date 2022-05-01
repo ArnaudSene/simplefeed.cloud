@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>simplefeed.cloud</title>
+</head>
+<body>
+
+    <div id="ws">
+        <h1>Websocket simplefeed.cloud</h1>
+        <ul id='new-feeds'></ul>
+        <ul id="feeds">
+            {% for feed in feeds|reverse %}
+            <li>
+                <span>{{ feed.origin|e }}</span>
+                <span>{{ feed.event|e }}</span>
+                <span>{{ feed.description|e }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        // const data = [];
+        // let socket = new WebSocket("ws://localhost:8000/ws");
+        let socket = new WebSocket("ws://192.168.56.38:80/ws");
+        socket.onmessage = function(event) {
+            // let feed = event.data.stringify()
+            const feed = JSON.parse(event.data);
+            // console.log(`[message] Data received from server: ${feed}`);
+
+            let new_feeds = document.getElementById('new-feeds')
+            let li = document.createElement('li')
+
+            for (let item in feed) {
+                // Log to console
+                let span = document.createElement('span')
+                let content = document.createTextNode(feed[item])
+                span.appendChild(content)
+                li.appendChild(span)
+            }
+
+            new_feeds.appendChild(li)
+        };
+    </script>
+</body>
+</html>

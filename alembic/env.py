@@ -39,10 +39,10 @@ def get_url() -> str:
     postgres_password = os.getenv("POSTGRES_PASSWORD", "SuperSecret")
     postgres_db = os.getenv("POSTGRES_DB", "simple_feed_db")
     postgres_host = os.getenv("POSTGRES_HOST", "database")
-    postgres_post = os.getenv("POSTGRES_POST", 5432)
+    postgres_port = os.getenv("POSTGRES_PORT", 5432)
 
     return f"postgresql://{postgres_user}:{postgres_password}" \
-           f"@{postgres_host}:{postgres_post}/{postgres_db}"
+           f"@{postgres_host}:{postgres_port}/{postgres_db}"
 
 
 def run_migrations_offline():

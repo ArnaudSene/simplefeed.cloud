@@ -1,45 +1,45 @@
-version: "3"
+version: "3.9"
 
 services:
   database:
-    image: 'postgres:latest'
-    ports:
-      - "5432:5432"
+    image: postgres:latest
     env_file:
-      - .env
+      - ".env"
+    ports:
+      - "${POSTGRES_PORT}"
     environment:
-      PGDATA: /var/lib/pg_data
+      PGDATA: "${POSTGRES_PGDATA}"
     networks:
-      - simplefeed-network
+      - "simplefeed-network"
     volumes:
-      - ./db-data/:/var/lib/pg_data
+      - "${POSTGRES_VOLUME}:${POSTGRES_PGDATA}"
 
   pgadmin:
     image: dpage/pgadmin4
-    ports:
-      - "5433:80"
     env_file:
-      - .env
+      - ".env"
+    ports:
+      - "${PGADMIN_PORT}"
     environment:
-      SESSION_DB_PATH: /var/lib/pg_admin
+      SESSION_DB_PATH: "${PGADMIN_SESSION_DB_PATH}"
     depends_on:
-      - database
+      - "database"
     networks:
-      - simplefeed-network
+      - "simplefeed-network"
     volumes:
-      - ./pgadmin-data/:/var/lib/pg_admin
+      - "${PGADMIN_VOLUMES}:${PGADMIN_SESSION_DB_PATH}"
 
   webapi:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: "Dockerfile"
     ports:
       - "80:80"
     depends_on:
-      - database
+      - "database"
     networks:
-      - simplefeed-network
+      - "simplefeed-network"
 
 networks:
   simplefeed-network:
-    driver: bridge
+    driver: "bridge"

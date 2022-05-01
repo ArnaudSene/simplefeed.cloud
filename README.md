@@ -1,77 +1,91 @@
 # simplefeed.cloud
 
-
 # How to Deploy simplefeed.cloud
 
 1. Execute `deploy.py` to copy required files to start `simplefeed.cloud`
-2. Create a migration script for create/update tables in db
-3. Run the migration
-4. (Optional) Build manually Docker image for `simplefeed.cloud` api 
-5. Start `simplefeed.cloud` apps
+2. Build and run containers
+3. Connect to webapi
+4. Create and apply migration script for database
+5. Test simplefeed.cloud
 
 
-## 1. Execute `deploy.py` to copy required files to start `simplefeed.cloud`
+## 1 Execute `deploy.py` to copy required files to start `simplefeed.cloud`
+### arguments
+- `--target` *(Required)* specify the location where to deploy
+- `--db_path` *(Optional)* override the default path for database files 
+- `--files_and_dirs` *(Optional)* override the default list of files and dirs to copy to the target location
+- `--env_file` *(Optional)* override the default environment yaml file 
+- `--docker_env` *(Optional)* override the default docker environment yaml file
+- `--config_file` *(Optional)* override the default settings by providing a yaml file
 
-> Example with path = /deploy/simple-feed.cloud-test
+> Example with target = /deploy/simple-feed.cloud-test
 
 ```shell
-python deploy.py -path /deploy/simple-feed.cloud-test
+python deploy.py --target /tmp/deploy/simple-feed.cloud-test
 ```
+
+Output
+```shell
+SUCCESS Create directory '/tmp/deploy/simple-feed.cloud-test'
+SUCCESS Copy directory '/code_dev/projects/halia/simple-feed/alembic' to '/tmp/deploy/simple-feed.cloud-test/alembic'
+SUCCESS Copy directory '/code_dev/projects/halia/simple-feed/src' to '/tmp/deploy/simple-feed.cloud-test/src'
+SUCCESS Copy directory '/code_dev/projects/halia/simple-feed/templates' to '/tmp/deploy/simple-feed.cloud-test/templates'
+SUCCESS Copy file '/code_dev/projects/halia/simple-feed/deploy/docker-compose.yml' to '/tmp/deploy/simple-feed.cloud-test'
+SUCCESS Copy file '/code_dev/projects/halia/simple-feed/deploy/Dockerfile' to '/tmp/deploy/simple-feed.cloud-test'
+SUCCESS Copy file '/code_dev/projects/halia/simple-feed/deploy/run.sh' to '/tmp/deploy/simple-feed.cloud-test'
+SUCCESS Copy file '/code_dev/projects/halia/simple-feed/deploy/env.yml' to '/tmp/deploy/simple-feed.cloud-test'
+SUCCESS Copy file '/code_dev/projects/halia/simple-feed/alembic.ini' to '/tmp/deploy/simple-feed.cloud-test'
+SUCCESS Copy file '/code_dev/projects/halia/simple-feed/main.py' to '/tmp/deploy/simple-feed.cloud-test'
+SUCCESS Copy file '/code_dev/projects/halia/simple-feed/requirements.txt' to '/tmp/deploy/simple-feed.cloud-test'
+```
+
+## 2 Build and run containers
 
 ```shell
-create directory '/deploy/simple-feed.cloud-test'
-successfully created!
-copy directory '/code_dev/halia/simple-feed/alembic' to '/deploy/simple-feed.cloud-test/alembic'
-successfully copied!
-copy file '/code_dev/halia/simple-feed/deploy/docker-compose.yml' to '/deploy/simple-feed.cloud-test'
-successfully copied!
-copy file '/code_dev/halia/simple-feed/deploy/Dockerfile' to '/deploy/simple-feed.cloud-test'
-successfully copied!
-copy file '/code_dev/halia/simple-feed/deploy/run.sh' to '/deploy/simple-feed.cloud-test'
-successfully copied!
-copy file '/code_dev/halia/simple-feed/deploy/env.yml' to '/deploy/simple-feed.cloud-test'
-successfully copied!
-copy directory '/code_dev/halia/simple-feed/src' to '/deploy/simple-feed.cloud-test/src'
-successfully copied!
-copy directory '/code_dev/halia/simple-feed/templates' to '/deploy/simple-feed.cloud-test/templates'
-successfully copied!
-copy file '/code_dev/halia/simple-feed/alembic.ini' to '/deploy/simple-feed.cloud-test'
-successfully copied!
-copy file '/code_dev/halia/simple-feed/main.py' to '/deploy/simple-feed.cloud-test'
-successfully copied!
-copy file '/code_dev/halia/simple-feed/requirements.txt' to '/deploy/simple-feed.cloud-test'
-successfully copied!
+cd /tmp/deploy/simple-feed.cloud-test
+
+docker-compose up
+
+-- or --
+
+docker-compose up --build 
+
+-- or --
+
+docker-compose up --detach
 
 ```
 
-## 2. Create a migration script for create/update tables in db
+## 3.1 Connect to webapi container
+```bash
+cd /tmp/deploy/simple-feed.cloud-test
 
+docker-compose exec webapi bash
+```
+
+## 3.2 Create a migration script for create/update tables in db
 
 ```bash
 alembic revision --autogenerate -m "Init simplefeed tables"
 ```
 
-
-
-## 3.
-
-## 4. (Optional) Build and run manually Docker image for `simplefeed.cloud` api
-
-### Build Docker image for `simplefeed.cloud` api
+Output
 ```shell
-docker build -t simple-feedcloud_webapi .
-```
-### Run Docker container for `simplefeed.cloud` api
-```shell
-docker run -d --name simple-feedcloud_webapi_1 -p 80:80 simple-feedcloud_webapi
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.autogenerate.compare] Detected added table 'feed'
+  Generating /code/alembic/versions/4fddfe689110_init_simplefeed_tables.py ...  done
 
 ```
 
+## 3.3 Apply migration script
+```shell
+alembic upgrade head
+```
+Output
+```shell
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 4fddfe689110, Init simplefeed tables
 
-
-1. Define files and dirs to make a package
-2. define execution tasks
-3. copy these files and dirs to the new location
-4. execute tasks
-    - run containers (postgres, pgadmin, webapi)
-    - apply alembic migration (create database and table if needed)
+```

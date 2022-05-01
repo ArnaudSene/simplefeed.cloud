@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>simplefeed.cloud</title>
+</head>
+<body>
+
+    <div id="ws">
+        <h1>{{ header || 'Websocket simplefeed.cloud' }}</h1>
+
+        <ul>
+            <li v-for="item in items">{{ item }}</li>
+        </ul>
+
+    </div>
+
+    <script src="https://unpkg.com/vue@3"></script>
+    <script>
+        const data = [];
+        let socket = new WebSocket("ws://localhost:8000/ws");
+        socket.onmessage = function(event) {
+            // console.log(`[message] Data received from server: ${event.data}`);
+            console.log("[data]: " + event.data)
+            data.push(event.data);
+            // console.log(`[message] Data received from server: ` + data[0].origin);
+        };
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    header: 'Event list',
+                    items: ['Hello Vue!']
+                }
+            }
+        }).mount('#ws')
+
+
+    </script>
+
+
+
+</body>
+</html>
